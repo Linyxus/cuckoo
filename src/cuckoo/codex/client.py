@@ -25,7 +25,7 @@ from cuckoo.codex.config import (
     ShutdownPolicy,
     _Unset,
 )
-from cuckoo.codex.errors import ClientClosedError, TransportError
+from cuckoo.codex.errors import ClientClosedError, RpcError, TransportError
 from cuckoo.codex.inputs import TurnInput, normalize_input
 from cuckoo.codex.protocol import methods
 from cuckoo.codex.protocol.common import (
@@ -284,7 +284,11 @@ class CodexClient:
             auto_resume=auto_resume,
         )
         if name is not None:
-            await thread.set_name(name)
+            try:
+                await thread.set_name(name)
+            except RpcError as exc:
+                # e.g. ephemeral threads reject metadata updates
+                logger.debug("could not name thread %s: %s", thread.id, exc)
         return thread
 
     async def resume_thread(

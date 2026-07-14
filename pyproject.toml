@@ -4,7 +4,13 @@ version = "0.1.0"
 description = "Agent bridge: manage Codex subagents programmatically"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = ["pydantic>=2.8"]
+dependencies = [
+    "mcp>=1.28.1",
+    "pydantic>=2.8",
+]
+
+[project.scripts]
+cuckoo-server = "cuckoo.server:main"
 
 [dependency-groups]
 dev = [

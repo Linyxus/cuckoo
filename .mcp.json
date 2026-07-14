@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "cuckoo": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "${CLAUDE_PLUGIN_ROOT}",
+        "cuckoo-server"
+      ]
+    }
+  }
+}

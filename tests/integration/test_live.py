@@ -63,6 +63,45 @@ async def test_ephemeral_readonly_turn(client):
     assert agent.last_agent_message == result.final_message
 
 
+async def test_bridge_messaging_loop(tmp_path):
+    """Full bidirectional loop: agent messages us, blocks on a question,
+    uses our answer in its final reply."""
+    import tempfile
+
+    from cuckoo.manager import AgentManager
+
+    manager = AgentManager(
+        state_dir=tmp_path,
+        socket_path=Path(tempfile.mkdtemp(dir="/tmp", prefix="cuckoo-live-")) / "b.sock",
+        default_cwd=REPO_ROOT,
+    )
+    try:
+        agent = await manager.spawn(
+            "This is a communication test. Do exactly this, in order:\n"
+            "1. Call the send_message tool (cuckoo_bridge MCP server) with "
+            'text "starting" and kind "progress".\n'
+            '2. Call the ask tool with question "Which color?" and options '
+            '["red", "blue"].\n'
+            "3. Reply with exactly: PICKED <answer>\n"
+            "Do not run any commands or read any files.",
+            name="live-loop",
+            sandbox="read-only",
+            ephemeral=True,
+        )
+        # Answer the blocking question when it appears, then await the turn.
+        async with asyncio.timeout(150):
+            while not agent.current_task.done():
+                for question in manager.pending_questions():
+                    await manager.answer(question["question_id"], "blue")
+                await asyncio.sleep(1)
+        kinds = {item["kind"] for item in manager.recent_activity(limit=50)}
+        assert {"message", "question", "completed"} <= kinds
+        result = manager.result("live-loop")
+        assert result is not None and "PICKED blue" in (result.final_message or "")
+    finally:
+        await manager.aclose()
+
+
 async def test_interrupt_running_turn(client):
     agent = await client.start_thread(cwd=REPO_ROOT, ephemeral=True)
     turn = await agent.start_turn(

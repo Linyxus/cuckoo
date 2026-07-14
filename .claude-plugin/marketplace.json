@@ -1,0 +1,15 @@
+{
+  "name": "cuckoo",
+  "description": "Codex subagents for Claude Code — spawn, message, and monitor OpenAI Codex agents as native-feeling subagents.",
+  "owner": {
+    "name": "Yichen Xu",
+    "email": "linyxus00@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "cuckoo",
+      "source": "./",
+      "description": "Codex subagents for Claude Code: spawn OpenAI Codex agents like native subagents, message them mid-task, and get notified when they report back."
+    }
+  ]
+}
