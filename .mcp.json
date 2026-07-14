@@ -4,7 +4,7 @@
       "command": "uv",
       "args": [
         "run",
-        "--directory",
+        "--project",
         "${CLAUDE_PLUGIN_ROOT}",
         "cuckoo-server"
       ]

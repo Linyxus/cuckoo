@@ -16,7 +16,10 @@ def state_dir(cwd: str) -> Path:
     override = os.environ.get("CUCKOO_STATE_DIR")
     if override:
         return Path(override)
-    digest = hashlib.sha256(str(Path(cwd).resolve()).encode()).hexdigest()[:16]
+    # Prefer CLAUDE_PROJECT_DIR (always set for hooks) so this resolves the
+    # same directory as the server's journal.project_state_dir.
+    project = os.environ.get("CLAUDE_PROJECT_DIR") or cwd
+    digest = hashlib.sha256(str(Path(project).resolve()).encode()).hexdigest()[:16]
     return Path.home() / ".cache" / "cuckoo" / "projects" / digest
 
 

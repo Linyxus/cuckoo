@@ -27,11 +27,16 @@ from typing import Any
 
 def project_state_dir(cwd: str | Path | None = None) -> Path:
     """Per-project state directory, derived from the project path so the
-    MCP server and hook processes agree without coordination."""
+    MCP server and hook processes agree without coordination.
+
+    Prefers ``CLAUDE_PROJECT_DIR`` over the process cwd: the server may be
+    launched with a cwd other than the session's project directory, while
+    hooks always resolve the project the same way."""
     override = os.environ.get("CUCKOO_STATE_DIR")
     if override:
         return Path(override)
-    resolved = str(Path(cwd or Path.cwd()).resolve())
+    project = cwd or os.environ.get("CLAUDE_PROJECT_DIR") or Path.cwd()
+    resolved = str(Path(project).resolve())
     digest = hashlib.sha256(resolved.encode()).hexdigest()[:16]
     return Path.home() / ".cache" / "cuckoo" / "projects" / digest
 
